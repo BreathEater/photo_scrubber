@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+python-multipart
+psycopg2-binary
+
+
+# Exiftool, which is an important non-python requirement, is installed thorugh Dockerfile directives.

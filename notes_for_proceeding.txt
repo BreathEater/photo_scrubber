@@ -1,0 +1,42 @@
+3. Proposed "Prototyping" Compose Structure
+  If I were setting this up on your VPS via Docker Contexts, I'd suggest this docker-compose.yml layout:
+
+
+   services:
+     nginx:
+       image: nginx:alpine
+       ports:
+         - "80:80"
+       volumes:
+         - ./frontend:/usr/share/nginx/html:ro
+         - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+       depends_on:
+         - backend
+
+     backend:
+       build: ./backend
+       # Uvicorn runs here, but no ports are exposed to the host!
+       # Nginx talks to it via the internal docker network.
+       environment:
+         - DATABASE_URL=postgres://...
+
+
+  4. The Neovim + Docker Context Loop
+  Since you're in Neovim:
+   1. Edit local files in WSL.
+   2. Switch context: docker context use hostinger-vps.
+   3. Deploy: docker-compose up -d --build.
+   4. Logs: Keep a terminal split open with docker-compose logs -f to see Uvicorn's output in real-time.
+
+
+  Critical Question for Brainstorming:
+  How are you handling the "Storage" part of photo_scrubber on the VPS?
+  If you're scrubbing photos, you'll need a persistent volume for the "input" and "output" folders.
+  Since you're using Docker Contexts, you need to make sure those paths exist on the VPS, not just in
+  your WSL environment.
+
+
+  Does Nginx feel like too much "boilerplate" right now, or are you ready to set up a nginx.conf? I can
+  provide a minimal "Reverse Proxy + Static" config if you want to go that route.
+
+
