@@ -73,8 +73,7 @@
                try {
                    const res = await fetch('/api/stats');
                    const data = await res.json();
-                   document.getElementById('stats').innerText = `🏆 ${data.photos_cleaned}
-   Photos Scrubbed`;
+                   document.getElementById('stats').innerText = `Photos scrubbed 🏆: ${data.photos_cleaned}`;
                } catch (e) {}
            }
 
