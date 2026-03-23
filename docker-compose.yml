@@ -5,10 +5,13 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: scrubber_db
+      BAU_DB_USER: ${BAU_DB_USER}
+      BAU_DB_PASSWORD: ${BAU_DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - /home/karol/photo_scrubber/db/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - /home/karol/photo_scrubber/db/procedures:/docker-entrypoint-initdb.d/procedures
+      - /home/karol/photo_scrubber/db/init.sql:/docker-entrypoint-initdb.d/99_init_tables.sql
+      - /home/karol/photo_scrubber/db/procedures:/procedures
+      - /home/karol/photo_scrubber/db/scripts:/docker-entrypoint-initdb.d/
     restart: always
 
   api:

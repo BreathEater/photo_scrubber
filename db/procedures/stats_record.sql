@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE stats_record_scrub(p_bytes INTEGER)
+CREATE OR REPLACE PROCEDURE stats_record(p_bytes INTEGER)
 LANGUAGE plpgsql AS $$
 BEGIN
 	UPDATE system_stats
