@@ -9,5 +9,5 @@ CREATE TABLE IF NOT EXISTS system_stats(
 
 INSERT INTO system_stats (photos_cleaned, bytes_removed) VALUES (0,0);
 
-GRANT ALL PRIVILEGES ON TABLE system_stats OWNER TO scrubber_app_user;
-GRANT USAGE, SELECT ON SEQUENCE system_stats_id_seq OWNER to scrubber_app_user;
+GRANT ALL PRIVILEGES ON TABLE system_stats TO scrubber_app_user;
+GRANT USAGE, SELECT ON SEQUENCE system_stats_id_seq TO scrubber_app_user;

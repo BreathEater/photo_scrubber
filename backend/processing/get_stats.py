@@ -1,4 +1,4 @@
-from database import get_db_connection
+from db_connection import get_db_connection
 
 def get_photos_cleaned_count() -> int:
 

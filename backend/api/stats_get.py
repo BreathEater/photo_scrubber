@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from processing.stats import get_photos_cleaned_count
+from processing.get_stats import get_photos_cleaned_count
 
 router = APIRouter()
 
