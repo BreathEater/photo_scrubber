@@ -9,10 +9,23 @@ services:
       BAU_DB_PASSWORD: ${BAU_DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - /home/karol/photo_scrubber/db/init.sql:/docker-entrypoint-initdb.d/99_init_tables.sql
       - /home/karol/photo_scrubber/db/procedures:/procedures
       - /home/karol/photo_scrubber/db/scripts:/docker-entrypoint-initdb.d/
     restart: always
+    
+  db-init:
+    image: postgres:15-alpine
+    depends_on:
+      - db
+    volumes:
+      - /home/karol/photo_scrubber/db/procedures:/procedures
+    environment:
+      - PGPASSWORD=${DB_PASSWORD}
+    command: sh -c "for f in /procedures/*.sql; do psql -h db -U ${DB_USER} -d scrubber_db -f \"\$$f\"; done"
+
+    # I use restart to avoid making a custom detector for db readiness, but hopefully there's a more elegant way of getting procedures imported.
+    restart: on-failure
+
 
   api:
     build: ./backend

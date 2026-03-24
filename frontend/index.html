@@ -100,11 +100,16 @@
                formData.append('file', file);
 
                try {
-                   const response = await fetch('/api/scrub', { method: 'POST', body: formData
-   });
-                   const blob = await response.blob();
+                   const response = await fetch('/api/scrub', { method: 'POST', body: formData });
 
+                   if (!response.ok) {
+                       const errorText = await response.text();
+                       throw new Error(errorText || 'Server error during scrubbing');
+                   }
+
+                   const blob = await response.blob();
                    const url = window.URL.createObjectURL(blob);
+
                    downloadBtn.href = url;
                    downloadBtn.download = `scrubbed_${file.name}`;
 
