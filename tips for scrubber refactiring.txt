@@ -1,0 +1,65 @@
+✦ To refactor photo_scrubber for batch processing while maintaining high architectural standards, you should focus on lifting the abstraction level of your processing layer.
+
+  Here are the pointers for your implementation, organized by the specific files in your directory structure:
+
+
+  1. The API Boundary (backend/api/scrub_post.py)
+  The Change: Update the scrub_post function signature to accept a List[UploadFile].
+
+
+   * Academic Commentary (Input Vectorization): By shifting from a scalar input (file) to a vector input (List[files]), you move the responsibility of "iteration" from the network layer to the business logic
+     layer.
+   * Pointer: FastAPI handles this natively. Use files: List[UploadFile] = File(...). Ensure your return type changes from a FileResponse (single file) to something capable of carrying multiple payloads, such
+     as a zipped archive or a JSON manifest of download links.
+
+
+  2. The Service Layer (backend/processing/scrub.py)
+  The Change: Create a new function, process_batch(upload_files), that orchestrates the lifecycle of multiple files.
+
+
+   * Academic Commentary (Orchestration vs. Execution): Distinguish between the Mechanic (the function that runs exiftool) and the Manager (the function that handles directory creation, file counting, and
+     aggregate math). This preserves the Single Responsibility Principle (SRP).
+   * Pointer:
+       * Initialize a results = {"photo_count": 0, "total_bytes_removed": 0, "output_paths": []} accumulator.
+       * Iterate through the upload_files, saving them to a temporary batch directory.
+       * Batch Execution: Instead of calling subprocess.run inside the loop, collect all file paths first. exiftool is highly efficient at processing lists: subprocess.run(["exiftool", ..., path1, path2,
+         path3]). This reduces the "forking overhead" of the operating system.
+
+
+  3. State Measurement (The "Before and After" Pattern)
+  The Change: Calculate sizes at the directory level rather than the file level.
+
+
+   * Academic Commentary (Empirical Verification): To ensure your database record is an "Atomic Truth," measure the state of the uploads/ directory immediately before and after the exiftool call.
+   * Pointer:
+       1. Sum the os.path.getsize() of all raw inputs.
+       2. Run the batch exiftool command.
+       3. Sum the os.path.getsize() of all generated clean outputs.
+       4. The difference is your bytes_removed. This is more robust than summing individual deltas, as it naturally handles files that might have been skipped or failed during the batch.
+
+
+  4. Data Persistence (backend/api/db/db_trigger.py)
+  The Change: Modify the call to trigger_db_procedure to reflect the batch nature.
+
+
+   * Academic Commentary (Batch Telemetry): If your database currently only accepts bytes_removed, you are losing the "Work Unit" context.
+   * Pointer: If possible, update your DB procedure to accept (photo_count, total_bytes_removed). This transforms your telemetry from a simple "counter" into a "job log," which is essential for auditability
+     and performance monitoring.
+
+  5. Resource Lifecycle (The "Transient Artifact" Problem)
+  The Change: Implement a cleanup strategy for the batch.
+
+
+   * Academic Commentary (Resource Leakage): In batch processing, the risk of orphaned files increases.
+   * Pointer: Use Python's tempfile.TemporaryDirectory or a unique batch_id folder for each request. Wrap your processing in a try...finally block to ensure that even if the scrub fails, the raw_ files are
+     purged from the disk, keeping your VPS storage lean.
+
+
+  Summary of Workflow
+   1. API: Receives List[UploadFile].
+   2. Processing (Manager): Creates a unique batch folder, saves all files, and measures total input size.
+   3. Processing (Mechanic): Calls exiftool once with all paths as arguments.
+   4. Processing (Manager): Measures total output size, zips the results, and returns the path + stats.
+   5. API: Records the aggregate stats to the DB and serves the ZIP file.
+
+

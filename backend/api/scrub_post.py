@@ -6,9 +6,9 @@ from api.db.db_trigger import trigger_db_procedure
 router = APIRouter()
 
 @router.post("/scrub")
-async def scrub_post(file: UploadFile = File(...)):
+async def scrub_post(files: list[UploadFile] = File(...)):
 
-    output_path, bytes_removed = clean_photo_and_get_metadata(file)
+    output_path, bytes_removed = clean_photo_and_get_metadata(files)
 
     trigger_db_procedure("stats_record", bytes_removed)
     

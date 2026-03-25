@@ -14,7 +14,7 @@ def clean_photo_and_get_metadata(upload_file):
     original_size = os.path.getsize(input_path)
 
     # run exiftool:
-    subprocess.run(["exiftool", "-all", "-o", output_path, input_path], check=True)
+    subprocess.run(["exiftool", "-all=", "-tagsFromFile", "@", "-Orientation", "-o", output_path, input_path], check=True)
 
     #Calculate bytes_removed
     new_size = os.path.getsize(output_path)
