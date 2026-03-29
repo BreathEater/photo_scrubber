@@ -1,0 +1,24 @@
+<div id="result" class="mt-6 hidden bg-green-50 border border-green-200 rounded-xl p-6 flex justify-between items-center animate-bounce">
+    <div>
+        <h4 class="text-green-800 font-bold">Successfully Scrubbed!</h4>
+        <p class="text-green-600 text-sm">All privacy-leaking metadata has been removed.</p>
+    </div>
+    <a id="downloadBtn" href="#" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition shadow-md">
+        Download
+    </a>
+</div>
+
+<script>
+    (function() {
+        const result = document.getElementById('result');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        document.addEventListener('upload-success', (e) => {
+            const { blob, filename } = e.detail;
+            const url = window.URL.createObjectURL(blob);
+            downloadBtn.href = url;
+            downloadBtn.download = `scrubbed_${filename}`;
+            result.classList.remove('hidden');
+        });
+    })();
+</script>

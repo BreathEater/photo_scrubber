@@ -1,0 +1,16 @@
+<div id="status" class="mt-6 hidden text-center">
+    <div class="animate-spin inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mb-2"></div>
+    <p class="text-slate-600 font-medium">Scrubbing metadata...</p>
+</div>
+
+<script>
+    (function() {
+        const status = document.getElementById('status');
+        document.addEventListener('upload-start', () => {
+            status.classList.remove('hidden');
+            document.getElementById('result').classList.add('hidden');
+        });
+        document.addEventListener('upload-success', () => status.classList.add('hidden'));
+        document.addEventListener('upload-error', () => status.classList.add('hidden'));
+    })();
+</script>

@@ -1,0 +1,24 @@
+<div id="stats" class="text-sm font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+    Loading stats...
+</div>
+
+<script>
+    (function() {
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+                document.getElementById('stats').innerText = `Photos scrubbed 🏆: ${data.photos_cleaned}`;
+            } catch (e) {
+                console.error("Stats fetch failed");
+            }
+        }
+        
+        // Initial fetch and poll every 30s
+        fetchStats();
+        setInterval(fetchStats, 30000);
+
+        // Global event to refresh stats after upload
+        document.addEventListener('stats-update', fetchStats);
+    })();
+</script>
