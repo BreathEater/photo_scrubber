@@ -9,8 +9,8 @@ services:
       BAU_DB_PASSWORD: ${BAU_DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - /home/karol/photo_scrubber/db/procedures:/procedures
-      - /home/karol/photo_scrubber/db/scripts:/docker-entrypoint-initdb.d/
+      - ./db/procedures:/procedures
+      - ./db/scripts:/docker-entrypoint-initdb.d/
     restart: always
     
   db-init:
@@ -18,7 +18,7 @@ services:
     depends_on:
       - db
     volumes:
-      - /home/karol/photo_scrubber/db/procedures:/procedures
+      - ./db/procedures:/procedures
     environment:
       - PGPASSWORD=${DB_PASSWORD}
     command: sh -c "for f in /procedures/*.sql; do psql -h db -U ${DB_USER} -d scrubber_db -f \"\$$f\"; done"
@@ -36,7 +36,8 @@ services:
     environment: 
      DATABASE_URL: postgresql://${BAU_DB_USER}:${BAU_DB_PASSWORD}@db:5432/scrubber_db
     volumes:
-      - /home/karol/photo_scrubber/backend:/app
+      - ./backend:/app
+      - ./frontend/:/frontend
     restart: always
 
   gateway:
@@ -46,8 +47,8 @@ services:
     depends_on:
       - api
     volumes:
-      - /home/karol/photo_scrubber/frontend/nginx.conf:/etc/nginx/conf.d/default.conf
-      - /home/karol/photo_scrubber/frontend:/usr/share/nginx/html
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
+#      - ./frontend:/usr/share/nginx/html
     restart: always
 
 
