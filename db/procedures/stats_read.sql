@@ -1,6 +1,9 @@
-CREATE OR REPLACE FUNCTION stats_summary_read()
-RETURNS TABLE(cleaned INTEGER, bytes BIGINT) AS $$
+CREATE OR REPLACE FUNCTION stats_read()
+RETURNS TABLE(cleaned BIGINT, bytes BIGINT) AS $$
 BEGIN
-	RETURN QUERY SELECT photos_cleaned, bytes_removed FROM system_stats LIMIT 1;
+	RETURN QUERY SELECT 
+	sum(photos_cleaned)::BIGINT,
+	sum(bytes_removed)::BIGINT
+	FROM system_stats;
 END;
 $$ LANGUAGE plpgsql;

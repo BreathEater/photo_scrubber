@@ -13,12 +13,19 @@
         const result = document.getElementById('result');
         const downloadBtn = document.getElementById('downloadBtn');
 
-        document.addEventListener('upload-success', (e) => {
-            const { blob, filename } = e.detail;
-            const url = window.URL.createObjectURL(blob);
-            downloadBtn.href = url;
-            downloadBtn.download = `scrubbed_${filename}`;
-            result.classList.remove('hidden');
-        });
-    })();
+document.addEventListener('upload-success', (e) => {
+       const { blob, filename } = e.detail;
+
+       // Create a temporary "Memory URL" for the blob
+       const url = window.URL.createObjectURL(blob);
+
+       // Set the download link
+       const downloadBtn = document.getElementById('downloadBtn');
+       downloadBtn.href = url;
+       downloadBtn.download = filename; // This will now correctly be .zip or .jpg
+
+       // Show the success card
+       document.getElementById('result').classList.remove('hidden');
+   });
+       })(); 
 </script>

@@ -1,10 +1,13 @@
 from fastapi import APIRouter
-from processing.get_stats import get_photos_cleaned_count
+from api.db.db_trigger import trigger_db_function
 
 router = APIRouter()
 
 @router.get("/stats")
 async def get_stats():
-    count = get_photos_cleaned_count()
-    return {"photos_cleaned": count}
+    result = trigger_db_function("stats_read") or (0, 0)
+    return{
+            "photos_cleaned": result[0] or 0,
+            "bytes_removed": result[1] or 0
+        }
 

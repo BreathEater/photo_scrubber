@@ -1,10 +1,7 @@
 CREATE OR REPLACE PROCEDURE stats_record(p_count INTEGER, p_bytes BIGINT)
 LANGUAGE plpgsql AS $$
 BEGIN
-	UPDATE system_stats
-	SET photos_cleaned = photos_cleaned + 1,
-		bytes_removed = bytes_removed + p_bytes,
-		last_updated = CURRENT_TIMESTAMP
-	WHERE id = (SELECT id FROM system_stats LIMIT 1);
+	INSERT INTO system_stats (photos_cleaned, bytes_removed, last_updated)
+	VALUES (p_count, p_bytes, CURRENT_TIMESTAMP);
 END;
 $$;

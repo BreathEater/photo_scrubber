@@ -1,10 +1,15 @@
 {% extends "layout.html" %}
 
 {% block content %}
-    {% include "elements/header.html" %}
+	{% include "elements/header.html" %}
+
+	{% include "components/file_staging.js" %}
+	{% include "components/file_type_checker.js" %}
+
 
     <main class="flex-grow container mx-auto max-w-2xl px-6 py-12">
         {% include "components/dropzone.js.html" %}
+        {% include "components/photos_tree.js.html" %}
         {% include "components/status_spinner.js.html" %}
         {% include "components/result_card.js.html" %}
     </main>
