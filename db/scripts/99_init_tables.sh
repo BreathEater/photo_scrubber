@@ -2,8 +2,7 @@
    set -e
 
    # This shell script will now correctly 'see' your .env variables!
-   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname
-   "$POSTGRES_DB" <<-EOSQL
+   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
        CREATE TABLE IF NOT EXISTS system_stats(
            id SERIAL PRIMARY KEY,
            photos_cleaned INTEGER DEFAULT 0,
@@ -18,15 +17,11 @@
        GRANT USAGE, SELECT ON SEQUENCE system_stats_id_seq TO
    $BAU_DB_USER;
 
-       GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO
-   $BAU_DB_USER;
-       GRANT EXECUTE ON ALL PROCEDURES IN SCHEMA public TO
+       GRANT EXECUTE ON ALL ROUTINES IN SCHEMA public TO
    $BAU_DB_USER;
 
        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON
-   FUNCTIONS TO $BAU_DB_USER;
-       ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON
-   PROCEDURES TO $BAU_DB_USER;
-   EOSQL
+   ROUTINES TO $BAU_DB_USER;
+EOSQL
 
 
