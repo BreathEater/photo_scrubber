@@ -1,17 +1,32 @@
-<div id="photosView" class="hidden mt-8 font-mono text-sm p-4 border-2 border-dashed border-transparent transition-all">
+<div id="photosView" class="hidden mt-8 font-mono text-sm p-4 border-2 border-dashed border-transparent
+   transition-all">
        <div class="flex justify-between items-center text-slate-500 mb-2">
            <span>photos of /staged_for_scrubbing</span>
            <span class="text-xs">(Drop more files to add)</span>
        </div>
        <hr class="mb-4">
+
        <table class="w-full">
            <tbody id="photosList"></tbody>
        </table>
+
        <div class="mt-8 flex justify-between items-center">
-           <button onclick="fileStaging.clear()" class="text-red-500 hover:underline">[ Clear All ]</button>
-           <button id="batchScrubBtn" class="border-2 border-black px-4 py-1 font-bold hover:bg-black hover:text-white">
-              SCRUB PHOTOS 
+           <div>
+               <button onclick="fileStaging.clear()" class="text-red-500 hover:underline mr-4">[ Clear All ]</button>
+               <button onclick="document.getElementById('fileInput').click()" class="text-blue-500 hover:underline">[
+   Add More ]</button>
+           </div>
+           <button id="batchScrubBtn" class="border-2 border-black px-4 py-1 font-bold hover:bg-black
+   hover:text-white">
+               SCRUB PHOTOS
            </button>
+       </div>
+
+       <!-- The Preview Tooltip -->
+       <div id="filePreview" class="hidden fixed pointer-events-none z-50 p-2 bg-white shadow-2xl border
+   border-slate-200 rounded-lg">
+           <img id="previewImg" class="w-48 h-48 object-cover rounded-md" src="">
+           <p id="previewName" class="text-[10px] mt-1 font-mono text-slate-400 text-center"></p>
        </div>
    </div>
 
@@ -19,8 +34,30 @@
        (function() {
            const view = document.getElementById('photosView');
            const list = document.getElementById('photosList');
+           const preview = document.getElementById('filePreview');
+           const previewImg = document.getElementById('previewImg');
+           const previewName = document.getElementById('previewName');
 
-           // Logic: Keep adding files if they are dropped on the tree
+           // HOVER LOGIC
+           window.showPreview = (index, event) => {
+               const file = window.fileStaging.queue[index];
+               if (!file) return;
+               const url = URL.createObjectURL(file);
+               previewImg.src = url;
+               previewName.innerText = file.name;
+               preview.classList.remove('hidden');
+               preview.style.left = (event.clientX + 15) + 'px';
+               preview.style.top = (event.clientY + 15) + 'px';
+           };
+
+           window.hidePreview = () => {
+               preview.classList.add('hidden');
+               if (previewImg.src.startsWith('blob:')) {
+                   URL.revokeObjectURL(previewImg.src);
+               }
+           };
+
+           // DRAG & DROP ON THE TREE
            view.ondragover = (e) => { e.preventDefault(); view.classList.add('bg-slate-100', 'border-slate-300'); };
            view.ondragleave = () => { view.classList.remove('bg-slate-100', 'border-slate-300'); };
            view.ondrop = (e) => {
@@ -29,21 +66,26 @@
                window.fileStaging.add(e.dataTransfer.files);
            };
 
+           // UPDATE UI WHEN STAGER CHANGES
            document.addEventListener('stager-updated', () => {
                const queue = window.fileStaging.queue;
                view.classList.toggle('hidden', queue.length === 0);
 
                list.innerHTML = queue.map((file, i) => `
-                   <tr class="hover:bg-slate-50">
+                   <tr class="hover:bg-slate-50 cursor-help" 
+                       onmouseenter="showPreview(${i}, event)"
+                       onmouseleave="hidePreview()">
                        <td class="py-1 truncate" style="max-width: 300px;">${file.name}</td>
                        <td class="py-1 text-right text-slate-400">${(file.size / 1024).toFixed(1)}K</td>
                        <td class="py-1 text-right">
-                           <a href="#" onclick="fileStaging.remove(${i}); return false;" class="text-red-600">delete</a>
+                           <a href="#" onclick="fileStaging.remove(${i}); return false;" class="text-red-600
+   ml-4">delete</a>
                        </td>
                    </tr>
                `).join('');
            });
 
+           // BATCH SCRUB ACTION
            document.getElementById('batchScrubBtn').onclick = async () => {
                if (window.fileStaging.queue.length === 0) return;
                document.dispatchEvent(new CustomEvent('upload-start'));
@@ -53,12 +95,16 @@
 
                try {
                    const res = await fetch('/api/scrub', { method: 'POST', body: formData });
+                   if (!res.ok) throw new Error();
                    const blob = await res.blob();
                    document.dispatchEvent(new CustomEvent('upload-success', {
                        detail: { blob, filename: `scrubbed_${Date.now()}.zip` }
                    }));
                    window.fileStaging.clear();
-               } catch (e) { alert('Failed'); document.dispatchEvent(new CustomEvent('upload-error')); }
+               } catch (e) {
+                   alert('Scrubbing failed.');
+                   document.dispatchEvent(new CustomEvent('upload-error'));
+               }
            };
        })();
    </script>
