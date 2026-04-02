@@ -8,7 +8,7 @@
             try {
                 const res = await fetch('/api/stats');
                 const data = await res.json();
-                document.getElementById('stats').innerText = `Photos scrubbed 🏆: ${data.photos_cleaned}`;
+                document.getElementById('stats').innerText = `🌍 Photos Scrubbed Worldwide: ${data.photos_cleaned}`;
             } catch (e) {
                 console.error("Stats fetch failed");
             }

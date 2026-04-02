@@ -72,7 +72,7 @@
                view.classList.toggle('hidden', queue.length === 0);
 
                list.innerHTML = queue.map((file, i) => `
-                   <tr class="hover:bg-slate-50 cursor-help" 
+                  <tr class="hover:bg-slate-50 cursor-help" 
                        onmouseenter="showPreview(${i}, event)"
                        onmouseleave="hidePreview()">
                        <td class="py-1 truncate" style="max-width: 300px;">${file.name}</td>
@@ -85,7 +85,6 @@
                `).join('');
            });
 
-           // BATCH SCRUB ACTION
            document.getElementById('batchScrubBtn').onclick = async () => {
                if (window.fileStaging.queue.length === 0) return;
                document.dispatchEvent(new CustomEvent('upload-start'));
@@ -96,11 +95,18 @@
                try {
                    const res = await fetch('/api/scrub', { method: 'POST', body: formData });
                    if (!res.ok) throw new Error();
-                   const blob = await res.blob();
+
+                   const data = await res.json(); // Get the ID and Log
+
                    document.dispatchEvent(new CustomEvent('upload-success', {
-                       detail: { blob, filename: `scrubbed_${Date.now()}.zip` }
+                       detail: {
+                           sessionId: data.session_id,
+                           log: data.log
+                       }
                    }));
+
                    window.fileStaging.clear();
+                   document.dispatchEvent(new CustomEvent('stats-update'));
                } catch (e) {
                    alert('Scrubbing failed.');
                    document.dispatchEvent(new CustomEvent('upload-error'));
@@ -108,5 +114,3 @@
            };
        })();
    </script>
-
-

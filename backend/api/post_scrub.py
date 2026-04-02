@@ -1,20 +1,21 @@
 from fastapi import APIRouter, UploadFile, File
-from fastapi.responses import StreamingResponse
-from processing.scrub import clean_photos_and_get_metadata
+from processing.scrub import clean_photos
 from api.db.db_trigger import trigger_db_procedure
 
 router = APIRouter()
 
 @router.post("/scrub")
 async def scrub_post(files: list[UploadFile] = File(...)):
+   # 1. Process files
+   session_id, bytes_removed, log_text = clean_photos(files)
 
-    zip_buffer, bytes_removed = clean_photos_and_get_metadata(files)
+   # 2. Update Database Stats
+   trigger_db_procedure("stats_record", len(files), bytes_removed)
 
-    trigger_db_procedure("stats_record", len(files), bytes_removed)
-    
-    return StreamingResponse(
-        zip_buffer,
-        media_type="application/x-zip-compressed",
-        headers={"Content-Disposition": f"attachment; filename=scrubbed_{len(files)}_photos.zip"}
-            )
+   # 3. Return JSON (Body, not Header, to avoid Nginx size limits)
+   return {
+       "session_id": session_id,
+       "log": log_text
+   }
+
 
